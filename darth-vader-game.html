@@ -372,6 +372,35 @@ function drawStars() {
   }
 }
 
+// --- HUD ---
+function drawHUD() {
+  if (state !== 'PLAYING') return;
+
+  ctx.save();
+  ctx.font = 'bold 18px "Courier New"';
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#ccccff';
+  ctx.shadowColor = '#6666ff';
+  ctx.shadowBlur = 6;
+  ctx.fillText(`SCORE: ${score}`, W - 20, 30);
+
+  // HP ハート（赤い四角で表現）
+  ctx.textAlign = 'right';
+  ctx.font = '14px "Courier New"';
+  ctx.fillStyle = '#aaaaaa';
+  ctx.shadowBlur = 0;
+  ctx.fillText('HP', W - 20, 54);
+  for (let i = 0; i < 3; i++) {
+    const filled = i < vader.hp;
+    ctx.shadowColor = filled ? '#ff2020' : 'transparent';
+    ctx.shadowBlur = filled ? 8 : 0;
+    ctx.fillStyle = filled ? '#ff3030' : '#333333';
+    ctx.fillRect(W - 80 + i * 22, 58, 16, 16);
+  }
+
+  ctx.restore();
+}
+
 function update(dt) {
   updateStars(dt);
   updateVader(dt);
@@ -390,6 +419,7 @@ function draw() {
   drawParticles();
   drawVader();
   drawBeams();
+  drawHUD();
 }
 
 let lastTime = null;
