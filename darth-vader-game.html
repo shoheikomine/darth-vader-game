@@ -51,6 +51,76 @@ const STARS = [];
   }
 })();
 
+// --- Vader ---
+const vader = {
+  x: 100,
+  y: H / 2,
+  w: 60,
+  h: 80,
+  speed: 5,       // px/frame at 60fps
+  hp: 3,
+  invincible: 0,  // 無敵時間（秒）
+  flashTimer: 0,  // 白フラッシュタイマー（秒）
+};
+
+function updateVader(dt) {
+  if (state !== 'PLAYING') return;
+  if (keys['ArrowLeft'] || keys['ArrowUp']) vader.y -= vader.speed * 60 * dt;
+  if (keys['ArrowRight'] || keys['ArrowDown']) vader.y += vader.speed * 60 * dt;
+  vader.y = Math.max(vader.h / 2, Math.min(H - vader.h / 2, vader.y));
+  if (vader.invincible > 0) vader.invincible -= dt;
+  if (vader.flashTimer > 0) vader.flashTimer -= dt;
+}
+
+function drawVader() {
+  const x = vader.x;
+  const y = vader.y;
+  const w = vader.w;
+  const h = vader.h;
+
+  ctx.save();
+  if (vader.flashTimer > 0) {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.filter = 'brightness(5)';
+  }
+
+  // 体（台形）
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath();
+  ctx.moveTo(x - w * 0.3, y - h * 0.5);
+  ctx.lineTo(x + w * 0.3, y - h * 0.5);
+  ctx.lineTo(x + w * 0.4, y + h * 0.5);
+  ctx.lineTo(x - w * 0.4, y + h * 0.5);
+  ctx.closePath();
+  ctx.fill();
+
+  // ヘルメット（楕円）
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.ellipse(x, y - h * 0.25, w * 0.28, h * 0.3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // マスク（赤い目）
+  ctx.fillStyle = '#ff2020';
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur = 8;
+  ctx.fillRect(x - 10, y - h * 0.3, 6, 4);
+  ctx.fillRect(x + 4, y - h * 0.3, 6, 4);
+  ctx.shadowBlur = 0;
+
+  // マント
+  ctx.fillStyle = '#0a0a0a';
+  ctx.beginPath();
+  ctx.moveTo(x - w * 0.4, y - h * 0.1);
+  ctx.lineTo(x - w * 0.55, y + h * 0.5);
+  ctx.lineTo(x + w * 0.55, y + h * 0.5);
+  ctx.lineTo(x + w * 0.4, y - h * 0.1);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function updateStars(dt) {
   for (const s of STARS) {
     s.x -= s.speed * 60 * dt;
@@ -70,12 +140,14 @@ function drawStars() {
 
 function update(dt) {
   updateStars(dt);
+  updateVader(dt);
 }
 
 function draw() {
   ctx.fillStyle = '#05050f';
   ctx.fillRect(0, 0, W, H);
   drawStars();
+  drawVader();
 }
 
 let lastTime = null;
