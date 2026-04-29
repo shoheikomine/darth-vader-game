@@ -22,7 +22,12 @@ let state = 'START';
 
 // キー入力
 const keys = {};
-window.addEventListener('keydown', e => { keys[e.code] = true; });
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) {
+    e.preventDefault();
+  }
+});
 window.addEventListener('keyup', e => { keys[e.code] = false; });
 
 function update(dt) {
@@ -34,8 +39,9 @@ function draw() {
   ctx.fillRect(0, 0, W, H);
 }
 
-let lastTime = 0;
+let lastTime = null;
 function loop(timestamp) {
+  if (lastTime === null) { lastTime = timestamp; requestAnimationFrame(loop); return; }
   const dt = Math.min((timestamp - lastTime) / 1000, 0.05); // 秒、最大50ms
   lastTime = timestamp;
   update(dt);
