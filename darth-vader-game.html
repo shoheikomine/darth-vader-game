@@ -37,7 +37,7 @@ const STARS = [];
     STARS.push({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: Math.random() * 1.5 + 0.3,
+      r: Math.random() * 1.0 + 0.3,
       speed: Math.random() * 0.5 + 0.2, // layer1: slow
     });
   }
@@ -45,7 +45,7 @@ const STARS = [];
     STARS.push({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: Math.random() * 1.0 + 0.5,
+      r: Math.random() * 1.0 + 1.2,
       speed: Math.random() * 1.0 + 0.8, // layer2: fast
     });
   }
@@ -60,7 +60,8 @@ function updateStars(dt) {
 
 function drawStars() {
   for (const s of STARS) {
-    ctx.fillStyle = `rgba(255,255,255,${s.speed > 0.7 ? 0.9 : 0.5})`;
+    const opacity = 0.5 + (s.speed - 0.2) / 1.6 * 0.4;
+    ctx.fillStyle = `rgba(255,255,255,${opacity.toFixed(2)})`;
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
     ctx.fill();
