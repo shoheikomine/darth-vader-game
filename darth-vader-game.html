@@ -121,6 +121,48 @@ function drawVader() {
   ctx.restore();
 }
 
+// --- Beams ---
+const beams = [];
+let beamCooldown = 0; // 秒
+
+function fireBeam() {
+  beams.push({
+    x: vader.x + vader.w * 0.5,
+    y: vader.y,
+    w: 30,
+    h: 4,
+    speed: 600, // px/秒
+  });
+}
+
+function updateBeams(dt) {
+  if (state !== 'PLAYING') return;
+  beamCooldown -= dt;
+  if (keys['Space'] && beamCooldown <= 0) {
+    fireBeam();
+    beamCooldown = 0.3;
+  }
+  for (const b of beams) b.x += b.speed * dt;
+  // 画面外を除去
+  for (let i = beams.length - 1; i >= 0; i--) {
+    if (beams[i].x > W + 50) beams.splice(i, 1);
+  }
+}
+
+function drawBeams() {
+  for (const b of beams) {
+    ctx.save();
+    ctx.shadowColor = '#ff0000';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = '#ff4040';
+    ctx.fillRect(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h);
+    // 内側の明るいコア
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(b.x - b.w / 2 + 2, b.y - 1, b.w - 4, 2);
+    ctx.restore();
+  }
+}
+
 function updateStars(dt) {
   for (const s of STARS) {
     s.x -= s.speed * 60 * dt;
@@ -141,6 +183,7 @@ function drawStars() {
 function update(dt) {
   updateStars(dt);
   updateVader(dt);
+  updateBeams(dt);
 }
 
 function draw() {
@@ -148,6 +191,7 @@ function draw() {
   ctx.fillRect(0, 0, W, H);
   drawStars();
   drawVader();
+  drawBeams();
 }
 
 let lastTime = null;
