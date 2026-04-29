@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Darth Vader Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+    canvas { display: block; border: 1px solid #1a1a3e; }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="500"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+
+// ゲーム状態: 'START' | 'PLAYING' | 'GAMEOVER'
+let state = 'START';
+
+// キー入力
+const keys = {};
+window.addEventListener('keydown', e => { keys[e.code] = true; });
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+function update(dt) {
+  // 各フェーズで処理を分岐（後のタスクで埋める）
+}
+
+function draw() {
+  ctx.fillStyle = '#05050f';
+  ctx.fillRect(0, 0, W, H);
+}
+
+let lastTime = 0;
+function loop(timestamp) {
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.05); // 秒、最大50ms
+  lastTime = timestamp;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
