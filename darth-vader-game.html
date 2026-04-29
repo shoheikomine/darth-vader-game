@@ -65,8 +65,8 @@ const vader = {
 
 function updateVader(dt) {
   if (state !== 'PLAYING') return;
-  if (keys['ArrowLeft'] || keys['ArrowUp']) vader.y -= vader.speed * 60 * dt;
-  if (keys['ArrowRight'] || keys['ArrowDown']) vader.y += vader.speed * 60 * dt;
+  if (keys['ArrowUp']) vader.y -= vader.speed * 60 * dt;
+  if (keys['ArrowDown']) vader.y += vader.speed * 60 * dt;
   vader.y = Math.max(vader.h / 2, Math.min(H - vader.h / 2, vader.y));
   if (vader.invincible > 0) vader.invincible -= dt;
   if (vader.flashTimer > 0) vader.flashTimer -= dt;
@@ -412,7 +412,7 @@ function resetGame() {
   particles.length = 0;
   score = 0;
   playTime = 0;
-  spawnTimer = 0;
+  spawnTimer = 2.0;
   beamCooldown = 0;
   state = 'PLAYING';
 }
