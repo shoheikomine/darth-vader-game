@@ -127,6 +127,14 @@ let score = 0;
 // パーティクル（Task 7 で実装）
 function spawnParticles(x, y) { /* later */ }
 
+// --- Collision ---
+function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax - aw / 2 < bx + bw / 2 &&
+         ax + aw / 2 > bx - bw / 2 &&
+         ay - ah / 2 < by + bh / 2 &&
+         ay + ah / 2 > by - bh / 2;
+}
+
 // --- Beams ---
 const beams = [];
 let beamCooldown = 0; // 秒
@@ -219,6 +227,39 @@ function updateEnemies(dt) {
   }
 }
 
+function checkCollisions() {
+  if (state !== 'PLAYING') return;
+
+  // ビーム vs 敵
+  for (let bi = beams.length - 1; bi >= 0; bi--) {
+    const b = beams[bi];
+    for (let ei = enemies.length - 1; ei >= 0; ei--) {
+      const e = enemies[ei];
+      if (rectsOverlap(b.x, b.y, b.w, b.h, e.x, e.y, e.w, e.h)) {
+        spawnParticles(e.x, e.y);
+        score += e.type === 'xwing' ? 50 : 20;
+        enemies.splice(ei, 1);
+        beams.splice(bi, 1);
+        break;
+      }
+    }
+  }
+
+  // 敵 vs ベーダー
+  if (vader.invincible <= 0) {
+    for (let ei = enemies.length - 1; ei >= 0; ei--) {
+      const e = enemies[ei];
+      if (rectsOverlap(vader.x, vader.y, vader.w * 0.6, vader.h * 0.8, e.x, e.y, e.w, e.h)) {
+        vader.hp -= 1;
+        vader.invincible = 1.0;
+        vader.flashTimer = 0.3;
+        enemies.splice(ei, 1);
+        if (vader.hp <= 0) state = 'GAMEOVER';
+      }
+    }
+  }
+}
+
 function drawXWing(e) {
   ctx.save();
   // 機体
@@ -290,6 +331,8 @@ function update(dt) {
   updateVader(dt);
   updateBeams(dt);
   updateEnemies(dt);
+  checkCollisions();
+  if (state === 'PLAYING') score += Math.floor(10 * dt);
 }
 
 function draw() {
