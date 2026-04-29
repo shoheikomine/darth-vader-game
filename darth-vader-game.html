@@ -401,7 +401,92 @@ function drawHUD() {
   ctx.restore();
 }
 
+// --- Game State Screens ---
+function resetGame() {
+  vader.y = H / 2;
+  vader.hp = 3;
+  vader.invincible = 0;
+  vader.flashTimer = 0;
+  beams.length = 0;
+  enemies.length = 0;
+  particles.length = 0;
+  score = 0;
+  playTime = 0;
+  spawnTimer = 0;
+  beamCooldown = 0;
+  state = 'PLAYING';
+}
+
+function drawStartScreen() {
+  ctx.save();
+  // タイトル
+  ctx.font = 'bold 48px "Courier New"';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#cc0000';
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur = 24;
+  ctx.fillText('DARTH VADER', W / 2, H / 2 - 60);
+
+  ctx.font = 'bold 24px "Courier New"';
+  ctx.fillStyle = '#888899';
+  ctx.shadowColor = '#4444aa';
+  ctx.shadowBlur = 8;
+  ctx.fillText('SURVIVAL', W / 2, H / 2 - 20);
+
+  ctx.font = '16px "Courier New"';
+  ctx.fillStyle = '#666688';
+  ctx.shadowBlur = 0;
+  ctx.fillText('↑↓ で移動 / SPACE で攻撃', W / 2, H / 2 + 30);
+
+  // 点滅テキスト
+  if (Math.floor(Date.now() / 500) % 2 === 0) {
+    ctx.fillStyle = '#aaaaff';
+    ctx.shadowColor = '#6666ff';
+    ctx.shadowBlur = 10;
+    ctx.fillText('[ SPACE ] START', W / 2, H / 2 + 80);
+  }
+  ctx.restore();
+}
+
+function drawGameOverScreen() {
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.font = 'bold 52px "Courier New"';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ff2020';
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur = 30;
+  ctx.fillText('GAME OVER', W / 2, H / 2 - 50);
+
+  ctx.font = 'bold 24px "Courier New"';
+  ctx.fillStyle = '#ccccff';
+  ctx.shadowColor = '#6666ff';
+  ctx.shadowBlur = 10;
+  ctx.fillText(`SCORE: ${score}`, W / 2, H / 2 + 10);
+
+  if (Math.floor(Date.now() / 500) % 2 === 0) {
+    ctx.font = '16px "Courier New"';
+    ctx.fillStyle = '#aaaaff';
+    ctx.shadowColor = '#6666ff';
+    ctx.shadowBlur = 8;
+    ctx.fillText('[ SPACE ] RETRY', W / 2, H / 2 + 60);
+  }
+  ctx.restore();
+}
+
 function update(dt) {
+  // 状態遷移
+  if (state === 'START' && keys['Space']) {
+    keys['Space'] = false;
+    resetGame();
+  }
+  if (state === 'GAMEOVER' && keys['Space']) {
+    keys['Space'] = false;
+    resetGame();
+  }
+
   updateStars(dt);
   updateVader(dt);
   updateBeams(dt);
@@ -420,6 +505,8 @@ function draw() {
   drawVader();
   drawBeams();
   drawHUD();
+  if (state === 'START') drawStartScreen();
+  if (state === 'GAMEOVER') drawGameOverScreen();
 }
 
 let lastTime = null;
