@@ -2,11 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Darth Vader Game</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-    canvas { display: block; border: 1px solid #1a1a3e; }
+    canvas { display: block; border: 1px solid #1a1a3e; max-width: 100%; max-height: 100vh; touch-action: none; }
   </style>
 </head>
 <body>
@@ -29,6 +30,50 @@ window.addEventListener('keydown', e => {
   }
 });
 window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// --- Touch Controls ---
+const TOUCH_BTNS = {
+  up:   { x: 75,  y: 405, r: 38 },
+  down: { x: 75,  y: 460, r: 38 },
+  fire: { x: 725, y: 435, r: 45 },
+};
+
+function touchToCanvas(touch) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  return {
+    x: (touch.clientX - rect.left) * scaleX,
+    y: (touch.clientY - rect.top) * scaleY,
+  };
+}
+
+function hitBtn(btn, cx, cy) {
+  return Math.hypot(cx - btn.x, cy - btn.y) <= btn.r;
+}
+
+function applyTouches(e) {
+  e.preventDefault();
+  keys['ArrowUp'] = false;
+  keys['ArrowDown'] = false;
+  keys['Space'] = false;
+  for (const t of e.touches) {
+    const { x, y } = touchToCanvas(t);
+    if (state !== 'PLAYING') { keys['Space'] = true; continue; }
+    if (hitBtn(TOUCH_BTNS.up,   x, y)) keys['ArrowUp']   = true;
+    if (hitBtn(TOUCH_BTNS.down, x, y)) keys['ArrowDown']  = true;
+    if (hitBtn(TOUCH_BTNS.fire, x, y)) keys['Space']      = true;
+  }
+}
+
+canvas.addEventListener('touchstart', applyTouches, { passive: false });
+canvas.addEventListener('touchmove',  applyTouches, { passive: false });
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  keys['ArrowUp'] = false;
+  keys['ArrowDown'] = false;
+  keys['Space'] = false;
+}, { passive: false });
 
 // --- Starfield ---
 const STARS = [];
@@ -496,6 +541,34 @@ function update(dt) {
   if (state === 'PLAYING') score += Math.floor(10 * dt);
 }
 
+function drawTouchButtons() {
+  if (!('ontouchstart' in window)) return;
+  const btns = [
+    { ...TOUCH_BTNS.up,   label: '▲', key: 'ArrowUp' },
+    { ...TOUCH_BTNS.down, label: '▼', key: 'ArrowDown' },
+    { ...TOUCH_BTNS.fire, label: 'FIRE', key: 'Space' },
+  ];
+  for (const b of btns) {
+    const active = keys[b.key];
+    ctx.save();
+    ctx.globalAlpha = active ? 0.75 : 0.35;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fillStyle = b.key === 'Space' ? '#660000' : '#003366';
+    ctx.fill();
+    ctx.strokeStyle = b.key === 'Space' ? '#ff4040' : '#4488ff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.globalAlpha = active ? 1.0 : 0.6;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = b.key === 'Space' ? 'bold 14px "Courier New"' : 'bold 20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(b.label, b.x, b.y);
+    ctx.restore();
+  }
+}
+
 function draw() {
   ctx.fillStyle = '#05050f';
   ctx.fillRect(0, 0, W, H);
@@ -505,6 +578,7 @@ function draw() {
   drawVader();
   drawBeams();
   drawHUD();
+  drawTouchButtons();
   if (state === 'START') drawStartScreen();
   if (state === 'GAMEOVER') drawGameOverScreen();
 }
