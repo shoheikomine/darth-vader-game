@@ -2,3 +2,6 @@
 .superpowers/
 .claude/
 docs/
+
+# Google Workspace MCP OAuth secrets
+.gsuite-mcp/
